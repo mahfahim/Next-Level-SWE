@@ -123,3 +123,93 @@ console.log(`Set Implementation took ${setEndTime - setStartTime}ms`);
 ---
 
 চাওলে আমি এটা আরও simplify করে **diagram + memory flow** দিয়েও বুঝিয়ে দিতে পারি, যেটা interview এর জন্য খুব useful হয়।
+---
+---
+---
+`Math.random()` হচ্ছে JavaScript-এর একটি built-in function, যা **random (এলোমেলো) সংখ্যা** generate করে।
+
+---
+
+## কী ধরনের সংখ্যা দেয়?
+
+```js
+Math.random()
+```
+
+👉 এটা সবসময় একটি **decimal (floating point)** সংখ্যা return করে
+👉 Range: **0 (inclusive) থেকে 1 (exclusive)**
+
+অর্থাৎ:
+
+```
+0 ≤ number < 1
+```
+
+### উদাহরণ:
+
+```js
+console.log(Math.random());
+```
+
+সম্ভাব্য output:
+
+```
+0.2345
+0.9871
+0.0012
+```
+
+---
+
+## কেন ব্যবহার করা হয়?
+
+মূলত random value দরকার হলে:
+
+* random number
+* random index
+* game logic
+* simulation
+
+---
+
+## তোমার কোডে কীভাবে ব্যবহার হয়েছে
+
+```js
+const randomIndex = Math.floor(Math.random() * itemPool.length);
+```
+
+এখানে ধাপে ধাপে কী হচ্ছে:
+
+1. `Math.random()` → 0 থেকে 1 এর মধ্যে number দেয়
+2. `* itemPool.length` → array length অনুযায়ী scale করে
+3. `Math.floor()` → decimal কেটে integer বানায়
+
+👉 Result: **valid random index (0 থেকে length-1)**
+
+---
+
+## সহজভাবে বুঝলে
+
+* `Math.random()` = 0 থেকে 1 এর মধ্যে random number
+* এটাকে multiply + floor করলে → random index পাওয়া যায়
+
+---
+
+## ছোট উদাহরণ
+
+```js
+const arr = ["A", "B", "C", "D"];
+
+const index = Math.floor(Math.random() * arr.length);
+console.log(arr[index]);
+```
+
+👉 প্রতিবার run করলে ভিন্ন output আসবে
+
+---
+
+চাওলে আমি `Math.random()` দিয়ে **range (like 1–100)** বা **random boolean / string** generate করার clean tricks দেখাতে পারি।
+---
+---
+---
+
