@@ -502,3 +502,10 @@ undefined
 ---
 
 চাও হলে আমি `never`, `unknown`, `void` এই advanced type গুলাও real example দিয়ে বুঝিয়ে দিতে পারি 👍
+
+---
+---
+---
+
+<img width="1309" height="473" alt="image" src="https://github.com/user-attachments/assets/2715a9bc-5e67-4fa9-a52c-97a9a581b020" />
+
