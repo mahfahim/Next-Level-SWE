@@ -234,18 +234,60 @@ export default config;
 
 ```ts
 import { createServer, IncomingMessage, Server, ServerResponse } from "http";
+// import → অন্য file/module থেকে কিছু আনা
+// { ... } → named imports (specific functions/classes আনা হচ্ছে)
+
+// createServer → HTTP server বানানোর function
+// IncomingMessage → request object এর type (client থেকে আসা request)
+// ServerResponse → response object এর type (server থেকে response পাঠাতে ব্যবহৃত)
+// Server → পুরো server instance এর type (TypeScript typing এর জন্য)
+
+// "http" → Node.js এর built-in module (web server বানানোর জন্য)
+
 import config from "./config";
+// config → নিজের বানানো config file থেকে import করা হচ্ছে
+// এখানে সাধারণত port, env settings রাখা থাকে
+
 import { routeHandler } from "./routes/route";
+// routeHandler → নিজের তৈরি function যা সব route handle করে
+// অর্থাৎ কোন URL এ কি response যাবে সেটা manage করে
 
 const server: Server = createServer(
+// const → variable declare করা (value change করা যাবে না)
+// server → variable নাম (HTTP server রাখবে)
+
+// : Server → TypeScript type annotation
+// অর্থাৎ server variable টা HTTP Server type হবে
+
+// createServer(...) → নতুন HTTP server তৈরি করে
+
   (req: IncomingMessage, res: ServerResponse) => {
+  // (req, res) → callback function (server এ request আসলে এটা run হয়)
+
+  // req → IncomingMessage (client এর request data)
+  // res → ServerResponse (client কে response পাঠানোর জন্য)
+
     routeHandler(req, res);
+    // routeHandler → সব routing logic handle করে
+    // req পাঠানো হচ্ছে → কোন URL/Method এসেছে সেটা জানতে
+    // res পাঠানো হচ্ছে → response পাঠানোর জন্য
   },
 );
 
 server.listen(config.port, () => {
-  console.log(`The server is running on the port ${config.port}`);
-});
+// server.listen → server start করে নির্দিষ্ট port এ run করায়
+
+// config.port → .env থেকে নেওয়া port number (যেমন 5000)
+// অর্থাৎ server চলে http://localhost:5000 এ
+
+  () => {
+    console.log(`The server is running on the port ${config.port}`);
+    // server সফলভাবে start হলে এই message দেখাবে
+
+    // template string ব্যবহার করা হয়েছে (` `)
+    // ${config.port} → dynamic port number বসায়
+  }
+);
 ```
 
 ---
