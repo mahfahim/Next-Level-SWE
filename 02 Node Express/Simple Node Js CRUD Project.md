@@ -83,9 +83,13 @@ npm install -D typescript ts-node-dev @types/node
 # Step 3: TypeScript Initialize
 
 ```bash
-npx tsc --init
+npx tsc --init   # TypeScript project initialize করার জন্য tsconfig.json file তৈরি করে
 
-// npx tsc --init কমান্ডটা TypeScript প্রজেক্টে একটি tsconfig.json ফাইল তৈরি করে, যেটা দিয়ে TypeScript compiler-এর সেটিংস কনফিগার করা হয়।
+# npx → কোনো package globally install না করেই run করার জন্য ব্যবহার হয়
+# tsc → TypeScript compiler
+# --init → TypeScript configuration file (tsconfig.json) auto generate করে
+
+# tsconfig.json এর ভিতরে TypeScript কিভাবে compile হবে (target, module, strict mode etc.) সেটা control করা যায়
 ```
 
 ---
