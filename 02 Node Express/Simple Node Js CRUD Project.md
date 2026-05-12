@@ -655,37 +655,89 @@ res.end()
 
 ```ts
 import type { IncomingMessage, ServerResponse } from "http";
+// import type → শুধু TypeScript type import করার জন্য ব্যবহার হয়
+
+// IncomingMessage → request object এর type
+// ServerResponse → response object এর type
+
 import { productController } from "../controller/product.controller";
+// productController → products related সব request handle করবে
+// controller folder থেকে import করা হচ্ছে
 
 export const routeHandler = (
+// routeHandler → সব route handle করার main function
+
   req: IncomingMessage,
+  // req → client এর request object
+
   res: ServerResponse,
+  // res → server এর response object
+
 ) => {
+
   const url = req.url;
+  // req.url → client কোন URL এ request পাঠিয়েছে সেটা নেয়
+  // উদাহরণ:
+  // "/"
+  // "/products"
+
   const method = req.method;
+  // req.method → কোন HTTP method use হয়েছে সেটা নেয়
+  // উদাহরণ:
+  // GET
+  // POST
+  // DELETE
 
   if (url === "/" && method === "GET") {
+  // যদি URL "/" হয় এবং method GET হয়
+  // তাহলে root route execute হবে
+
     res.writeHead(200, {
       "content-type": "application/json",
     });
+    // response header set করা হচ্ছে
+
+    // 200 → successful response
+    // content-type → response JSON format এ যাবে
 
     res.end(
       JSON.stringify({
         message: "This is root route",
       }),
     );
+    // response client এর কাছে পাঠানো হচ্ছে
+
+    // JSON.stringify(...) → object কে JSON string এ convert করছে
+
   } else if (url?.startsWith("/products")) {
+  // যদি URL "/products" দিয়ে শুরু হয়
+
+  // ?. → optional chaining
+  // url undefined হলেও error দিবে না
+
+  // startsWith("/products")
+  // "/products"
+  // "/products/1"
+  // "/products/create"
+  // সব match করবে
+
     productController(req, res);
+    // products related request controller এ পাঠানো হচ্ছে
+
   } else {
+  // উপরের কোন route match না করলে
+
     res.writeHead(404, {
       "content-type": "application/json",
     });
+    // 404 → route not found
 
     res.end(
       JSON.stringify({
         message: "Route not found!",
       }),
     );
+    // error response পাঠানো হচ্ছে
   }
 };
 ```
