@@ -612,6 +612,26 @@ export const sendResponse = (
   // ↓
   // '{"success":true}'
 };
+
+
+
+
+
+sendResponse() function এর কাজ হলো server থেকে client এর কাছে structured JSON response পাঠানো।
+
+এটা ব্যবহার করলে:
+✔ একই response code বারবার লিখতে হয় না
+✔ code clean ও reusable হয়
+✔ সব API একই format এ response পাঠায়
+
+Flow:
+response object তৈরি
+↓
+status code + header set করা
+↓
+JSON.stringify() দিয়ে string বানানো
+↓
+client কে response পাঠানো
 ```
 
 ---
