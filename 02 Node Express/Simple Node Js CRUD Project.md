@@ -176,15 +176,46 @@ PORT=5000   # এখানে PORT নামে একটি environment variabl
 
 ```ts
 import dotenv from "dotenv";
+// dotenv → একটি package যেটা .env file থেকে environment variables load করতে সাহায্য করে
+// environment variables মানে: secret config (API key, PORT, DB password ইত্যাদি)
+
 import path from "path";
+// path → Node.js এর built-in module
+// file path safely handle করার জন্য ব্যবহার হয় (Windows/Mac/Linux compatibility)
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+// dotenv.config() → .env file কে load করে process.env এর ভিতরে নিয়ে আসে
+
+// process.cwd() → current project root folder (যেখানে তুমি command চালাও)
+// path.resolve(...) → full absolute path বানায়
+// ".env" → environment file এর নাম
+
+// 👉 মানে: নিশ্চিতভাবে project root এর .env file থেকে সব variables load করা হচ্ছে
 
 const config = {
   port: Number(process.env.PORT),
+  // config → একটা object যেখানে app এর settings রাখা হচ্ছে
+  // const → variable reassign করা যাবে না
+  // { } → object structure (key-value pair রাখার জন্য)
+
+  // port → server কোন port এ run করবে সেটা define করে
+  // process.env.PORT → .env file থেকে PORT value আনে
+
+  // উদাহরণ:
+  // .env → PORT="5000"
+  // process.env.PORT → "5000" (string হিসেবে আসে)
+
+  // Number(...) → string কে number এ convert করে
+  // "5000" → 5000
+  // কারণ server port number অবশ্যই number হওয়া উচিত
 };
 
 export default config;
+// config → অন্য file গুলোতে ব্যবহার করার জন্য export করা হচ্ছে
+
+// default export → import করার সময় { } লাগবে না
+// উদাহরণ:
+// import config from "./config";
 ```
 
 ## এখানে কী হচ্ছে?
