@@ -68,13 +68,14 @@ npm init -y                # Node.js project initialize করে, package.json 
 # Step 2: Install Packages
 
 ```bash
-npm install dotenv // এটা দিয়ে dotenv package install করা হয়। dotenv হলো একটি package যেটা .env file এর environment variables load করে।
+npm install dotenv   # .env file থেকে environment variables (API key, DB password etc.) load করার জন্য dotenv package install করা হয়
 
 npm install -D typescript ts-node-dev @types/node
+# -D মানে devDependencies এ install হবে (শুধু development এর জন্য)
 
-// typescript → TypeScript support,
-// ts-node-dev → TypeScript server auto restart/run, 
-// @types/node → Node.js type support
+# typescript → TypeScript language support দেয় (compile এবং type checking এর জন্য)
+# ts-node-dev → TypeScript code সরাসরি run করে এবং file change হলে auto restart করে
+# @types/node → Node.js এর built-in features (fs, http etc.) TypeScript বুঝতে সাহায্য করে
 ```
 
 ---
