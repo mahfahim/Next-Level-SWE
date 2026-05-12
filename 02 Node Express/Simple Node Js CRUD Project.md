@@ -97,16 +97,56 @@ npx tsc --init
   // প্রজেক্টের নাম
   "name": "learning_node",
 
-  // প্রজেক্টের ভার্সন (প্রথম ভার্সন)
+  // প্রজেক্টের ভার্সন
   "version": "1.0.0",
 
-  // এখানে বিভিন্ন command রাখা হয় (npm run দিয়ে চালানো হয়)
+  // প্রজেক্টের ছোট বিবরণ (এখন খালি)
+  "description": "",
+
+  // এন্ট্রি ফাইল (পুরনো Node.js স্টাইল, এখন অনেক সময় ব্যবহার হয় না TypeScript এ)
+  "main": "index.js",
+
   "scripts": {
     
-    // dev নামে একটা command তৈরি করা হয়েছে
-    // এটা চালালে TypeScript server run হবে
-    // ts-node-dev ব্যবহার করা হচ্ছে যাতে auto-reload হয়
-    "dev": "ts-node-dev --respawn src/server.ts"
+    // dev command: development mode এ server চালায়
+    // tsx ব্যবহার করে TypeScript সরাসরি run করে
+    // watch mode মানে কোড change হলে auto restart হবে
+    "dev": "tsx watch ./src/server.ts",
+
+    // test command (default auto generated)
+    // এখানে এখন কোন test setup করা নেই
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+
+  // এখন খালি array (future এ keyword use করা যায়)
+  "keywords": [],
+
+  // author এর নাম (এখন খালি)
+  "author": "",
+
+  // লাইসেন্স টাইপ (open source permission টাইপ)
+  "license": "ISC",
+
+  // শুধু development এর জন্য দরকারি packages
+  "devDependencies": {
+
+    // Node.js এর TypeScript type definitions
+    // এগুলো না থাকলে Node টাইপ error দিতে পারে
+    "@types/node": "^25.5.0",
+
+    // TypeScript compiler
+    "typescript": "^6.0.2"
+  },
+
+  // runtime এ যেগুলো দরকার (production এ লাগে)
+  "dependencies": {
+
+    // environment variable manage করার জন্য (.env file)
+    "dotenv": "^17.3.1",
+
+    // TypeScript run করার tool
+    // ts-node এর modern + fast version
+    "tsx": "^4.21.0"
   }
 }
 ```
