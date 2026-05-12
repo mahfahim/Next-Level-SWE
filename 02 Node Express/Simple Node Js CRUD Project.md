@@ -354,18 +354,62 @@ export interface IProduct {
 
 ```ts
 import fs from "fs";
+// fs → Node.js এর built-in File System module
+// file read, write, update, delete করার জন্য ব্যবহার হয়
+
 import path from "path";
+// path → Node.js এর built-in module
+// file path safely তৈরি ও manage করার জন্য ব্যবহার হয়
 
 const filePath = path.join(process.cwd(), "./src/database/db.json");
+// filePath → db.json file এর full path store করছে
+
+// process.cwd() → current project root folder return করে
+// path.join(...) → path safely combine করে
+
+// উদাহরণ:
+// project root + ./src/database/db.json
+// → full absolute path তৈরি হবে
 
 export const readProduct = () => {
+// readProduct → database থেকে product read করার function
+
   const products = fs.readFileSync(filePath, "utf-8");
+  // fs.readFileSync(...) → file synchronously read করে
+
+  // filePath → কোন file read করবে
+  // "utf-8" → text encoding format
+
+  // db.json file এর content string আকারে return হবে
 
   return JSON.parse(products);
+  // JSON.parse(...) → JSON string কে JavaScript object/array এ convert করে
+
+  // উদাহরণ:
+  // '[{"id":1,"name":"Mouse"}]'
+  // ↓
+  // [{ id: 1, name: "Mouse" }]
 };
 
 export const insertProduct = (payload: any) => {
+// insertProduct → নতুন data database এ save করার function
+
+// payload → যেই data save করতে চাই
+// : any → যেকোনো type এর data accept করবে
+
   fs.writeFileSync(filePath, JSON.stringify(payload));
+  // fs.writeFileSync(...) → file এ data লিখে save করে
+
+  // filePath → কোন file এ save হবে
+  // JSON.stringify(payload)
+  // → JavaScript object/array কে JSON string এ convert করে
+
+  // উদাহরণ:
+  // [{ id: 1, name: "Mouse" }]
+  // ↓
+  // '[{"id":1,"name":"Mouse"}]'
+
+  // তারপর db.json file এ save হয়ে যাবে
 };
 ```
 
