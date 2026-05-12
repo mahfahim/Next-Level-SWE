@@ -98,59 +98,61 @@ npx tsc --init   # TypeScript project initialize করার জন্য tscon
 
 ```json
 {
-  // প্রজেক্টের নাম
   "name": "learning_node",
+  // প্রজেক্টের নাম (Node.js project identity)
 
-  // প্রজেক্টের ভার্সন
   "version": "1.0.0",
+  // প্রজেক্টের ভার্সন (initial release)
 
-  // প্রজেক্টের ছোট বিবরণ (এখন খালি)
   "description": "",
+  // প্রজেক্ট সম্পর্কে ছোট বিবরণ (এখন খালি রাখা হয়েছে)
 
-  // এন্ট্রি ফাইল (পুরনো Node.js স্টাইল, এখন অনেক সময় ব্যবহার হয় না TypeScript এ)
   "main": "index.js",
+  // entry point file (Node.js সাধারণত এখান থেকে start করে)
+  // তবে TypeScript project এ সাধারণত src/server.ts ব্যবহার করা হয়
 
   "scripts": {
-    
-    // dev command: development mode এ server চালায়
-    // tsx ব্যবহার করে TypeScript সরাসরি run করে
-    // watch mode মানে কোড change হলে auto restart হবে
-    "dev": "tsx watch ./src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    // default test script
+    // এখন কোন test setup নেই, তাই error message দেখাবে
 
-    // test command (default auto generated)
-    // এখানে এখন কোন test setup করা নেই
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "ts-node-dev --respawn src/server.ts"
+    // development mode এ server চালানোর command
+
+    // ts-node-dev → TypeScript code সরাসরি run করে
+    // --respawn → file change হলে server auto restart করে
+    // src/server.ts → main server file
   },
 
-  // এখন খালি array (future এ keyword use করা যায়)
   "keywords": [],
+  // project search keyword (এখন খালি)
 
-  // author এর নাম (এখন খালি)
   "author": "",
+  // project author নাম (এখন খালি)
 
-  // লাইসেন্স টাইপ (open source permission টাইপ)
   "license": "ISC",
+  // open-source license type (ISC = simple permissive license)
 
-  // শুধু development এর জন্য দরকারি packages
-  "devDependencies": {
+  "type": "module",
+  // Node.js কে ES Module হিসেবে ব্যবহার করতে বলে
+  // অর্থাৎ import/export syntax ব্যবহার করা যাবে
 
-    // Node.js এর TypeScript type definitions
-    // এগুলো না থাকলে Node টাইপ error দিতে পারে
-    "@types/node": "^25.5.0",
-
-    // TypeScript compiler
-    "typescript": "^6.0.2"
+  "dependencies": {
+    "dotenv": "^17.4.2"
+    // dotenv → .env file থেকে environment variables load করার জন্য
+    // production + runtime এ দরকার হয়
   },
 
-  // runtime এ যেগুলো দরকার (production এ লাগে)
-  "dependencies": {
+  "devDependencies": {
+    "@types/node": "^25.7.0",
+    // Node.js এর TypeScript type definitions
+    // TypeScript কে Node.js features বুঝতে সাহায্য করে
 
-    // environment variable manage করার জন্য (.env file)
-    "dotenv": "^17.3.1",
+    "ts-node-dev": "^2.0.0",
+    // TypeScript run + auto restart tool (development এ use হয়)
 
-    // TypeScript run করার tool
-    // ts-node এর modern + fast version
-    "tsx": "^4.21.0"
+    "typescript": "^6.0.3"
+    // TypeScript compiler (TS → JS convert করার জন্য)
   }
 }
 ```
