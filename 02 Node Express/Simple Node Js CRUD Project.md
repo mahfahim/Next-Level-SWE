@@ -58,10 +58,9 @@ learning_node/
 টার্মিনালে রান করো:
 
 ```bash
-mkdir learning_node
-cd learning_node
-
-npm init -y  // এটা চালালে Node.js project এর জন্য automatically package.json file তৈরি হয়।
+mkdir learning_node        # learning_node নামে নতুন folder তৈরি করে
+cd learning_node           # ওই folder এর ভিতরে ঢুকে যায়
+npm init -y                # Node.js project initialize করে, package.json auto তৈরি হয়
 ```
 
 ---
