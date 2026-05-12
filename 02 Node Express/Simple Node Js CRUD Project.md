@@ -498,6 +498,26 @@ export const parseBody = (req: IncomingMessage): Promise<any> => {
     });
   });
 };
+
+
+
+
+
+parseBody() function এর কাজ হলো HTTP request body থেকে আসা raw JSON string collect করে সেটাকে JavaScript object এ convert করা।
+
+Flow:
+Client → JSON data পাঠায়
+↓
+Server chunk chunk করে data receive করে
+↓
+সব chunk join হয়
+↓
+JSON.parse() দিয়ে object বানানো হয়
+↓
+usable data return করা হয়
+
+Promise ব্যবহার করা হয়েছে asynchronous data handle করার জন্য,
+আর try-catch ব্যবহার করা হয়েছে invalid JSON error handle করার জন্য।
 ```
 
 ---
