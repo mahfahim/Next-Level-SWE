@@ -435,20 +435,65 @@ JSON file থেকে data read করছে।
 
 ```ts
 import type { IncomingMessage } from "http";
+// import type → শুধু TypeScript type import করার জন্য ব্যবহার হয়
+// runtime এ এটা JavaScript এ যাবে না
+
+// IncomingMessage → HTTP request object এর type
+// client থেকে আসা request কে represent করে
 
 export const parseBody = (req: IncomingMessage): Promise<any> => {
+// parseBody → request body parse করার function
+
+// req → client এর request object
+// : IncomingMessage → req এর type
+
+// : Promise<any>
+// এই function asynchronous
+// future এ একটা value return করবে
+
+// any → যেকোনো type এর data return হতে পারে
+
   return new Promise((resolve, reject) => {
+  // নতুন Promise তৈরি করা হচ্ছে
+
+  // resolve → কাজ সফল হলে data return করবে
+  // reject → error হলে reject করবে
+
     let body = "";
+    // body নামে empty string নেওয়া হয়েছে
+    // request থেকে আসা data এখানে জমা হবে
 
     req.on("data", (chunk) => {
+    // req.on("data") → request থেকে data আসলে event trigger হয়
+
+    // chunk → ছোট ছোট data অংশ
+    // বড় data একবারে না এসে chunk আকারে আসে
+
       body += chunk;
+      // প্রতিটা chunk body এর সাথে যোগ করা হচ্ছে
+
+      // উদাহরণ:
+      // chunk1 + chunk2 + chunk3
+      // → full request body তৈরি হবে
     });
 
     req.on("end", () => {
+    // সব data receive শেষ হলে "end" event trigger হয়
+
       try {
         resolve(JSON.parse(body));
+        // JSON.parse(...) → JSON string কে JavaScript object এ convert করে
+
+        // উদাহরণ:
+        // '{"name":"Mouse"}'
+        // ↓
+        // { name: "Mouse" }
+
+        // resolve(...) → parsed data return করছে
       } catch (error) {
         reject(error);
+        // যদি invalid JSON হয় তাহলে error catch করবে
+        // reject(...) → Promise fail করবে
       }
     });
   });
