@@ -545,25 +545,72 @@ Example:
 
 ```ts
 import type { ServerResponse } from "http";
+// import type → শুধু TypeScript type import করার জন্য ব্যবহার হয়
+// runtime এ JavaScript এ যাবে না
+
+// ServerResponse → HTTP response object এর type
+// server client কে response পাঠানোর জন্য এটা ব্যবহার করে
 
 export const sendResponse = (
+// sendResponse → reusable response পাঠানোর function
+
   res: ServerResponse,
+  // res → response object
+  // : ServerResponse → response এর type
+
   statusCode: number,
+  // statusCode → HTTP status code
+  // number type হবে
+  // উদাহরণ: 200, 404, 500
+
   success: boolean,
+  // success → request successful কিনা
+  // true / false হবে
+
   message: string,
+  // message → response message
+  // string type হবে
+
   data?: any,
+  // data → optional response data
+  // ? মানে optional (না দিলেও চলবে)
+  // any → যেকোনো type হতে পারে
+
 ) => {
+
   const response = {
     success,
     message,
     data,
   };
+  // response নামে object তৈরি করা হচ্ছে
+
+  // success → request status
+  // message → response message
+  // data → actual data
+
+  // shorthand property ব্যবহার হয়েছে
+  // success: success এর short form শুধু success
 
   res.writeHead(statusCode, {
     "content-type": "application/json",
   });
+  // res.writeHead(...) → response header set করে
+
+  // statusCode → response status code পাঠায়
+  // content-type → client কে বলে response JSON format এ যাচ্ছে
+
+  // application/json → JSON response type
 
   res.end(JSON.stringify(response));
+  // res.end(...) → response শেষ করে client কে পাঠায়
+
+  // JSON.stringify(...) → object কে JSON string এ convert করে
+
+  // উদাহরণ:
+  // { success: true }
+  // ↓
+  // '{"success":true}'
 };
 ```
 
