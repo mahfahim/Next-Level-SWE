@@ -160,7 +160,12 @@ npx tsc --init   # TypeScript project initialize করার জন্য tscon
 # Step 5: Create `.env`
 
 ```env
-PORT=5000
+PORT=5000   # এখানে PORT নামে একটি environment variable সেট করা হচ্ছে
+
+# PORT → server কোন port number এ run করবে সেটা define করে
+# 5000 → এই মানটা মানে server http://localhost:5000 এ চলবে
+
+# সাধারণত এটা .env ফাইলে রাখা হয় যাতে code এর বাইরে config রাখা যায়
 ```
 
 ---
