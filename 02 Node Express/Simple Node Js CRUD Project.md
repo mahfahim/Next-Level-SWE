@@ -94,9 +94,18 @@ npx tsc --init
 
 ```json
 {
+  // প্রজেক্টের নাম
   "name": "learning_node",
+
+  // প্রজেক্টের ভার্সন (প্রথম ভার্সন)
   "version": "1.0.0",
+
+  // এখানে বিভিন্ন command রাখা হয় (npm run দিয়ে চালানো হয়)
   "scripts": {
+    
+    // dev নামে একটা command তৈরি করা হয়েছে
+    // এটা চালালে TypeScript server run হবে
+    // ts-node-dev ব্যবহার করা হচ্ছে যাতে auto-reload হয়
     "dev": "ts-node-dev --respawn src/server.ts"
   }
 }
