@@ -55,10 +55,33 @@ cd express
 
 ```bash
 npm init -y
+npm i -D typescript
+npx tsc --init
+npm install express --save
+or npm i express
+
+npm i --save -dev @types/express
+npm i -D tsx
+npm run dev 
 ```
 
 এতে `package.json` তৈরি হবে।
 
+tsconfig.json
+
+"rootDir": "./src",
+"outDir": "./dist",
+"module": "esnext"
+"target": "esnext";
+"types": ["node"]
+// "jsx" : "react-jsx" // comment it 
+
+package.json
+
+"type": "module"
+"scripts":{
+"dev": "tsx watch ./src/server.ts
+}
 ---
 
 # Step 3: Install Dependencies
