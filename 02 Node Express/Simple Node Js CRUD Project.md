@@ -762,78 +762,38 @@ Example:
 
 
 ```ts
-
 import type { IncomingMessage, ServerResponse } from "http";
-// IncomingMessage → request object এর type
-// ServerResponse → response object এর type
-
 import { insertProduct, readProduct } from "../service/product.service";
-// readProduct → db.json থেকে product read করে
-// insertProduct → db.json এ product save/write করে
-
 import type { IProduct } from "../types/product.type";
-// IProduct → product object এর TypeScript type/interface
-
 import { parseBody } from "../utility/parseBody";
-// parseBody → request body parse করে object বানায়
-
 import { sendResponse } from "../utility/sendResponse";
-// sendResponse → reusable JSON response পাঠানোর helper function
 
 export const productController = async (
   req: IncomingMessage,
   res: ServerResponse,
 ) => {
-// product related সব route এখানে handle করা হচ্ছে
-
   const url = req.url;
-  // request URL নেওয়া হচ্ছে
-
   const method = req.method;
-  // request method নেওয়া হচ্ছে (GET, POST, PUT, DELETE)
-
-  // /products/1
-  // split("/") করলে হবে:
-  // ["", "products", "1"]
-
   const urlParts = url?.split("/");
-  // URL কে "/" দিয়ে ভাগ করে array বানানো হচ্ছে
-
   const id =
-    urlParts && urlParts[1] === "products"
+    urlParts && urlParts[1] === "products" && urlParts[2]
       ? Number(urlParts[2])
       : null;
-
-  // যদি URL হয় "/products/1"
-  // তাহলে id = 1
-
-  // urlParts[2] → "1"
-  // Number(...) → string থেকে number
-
-  // না থাকলে id = null
 
   // =========================
   // GET ALL PRODUCTS
   // =========================
-
   if (url === "/products" && method === "GET") {
-
     try {
-
       const products = readProduct();
-      // db.json থেকে সব products read করা হচ্ছে
-
       return sendResponse(
         res,
         200,
         true,
-        "Products retrived succeefully",
+        "Products retrieved successfully", // 🛠️ Fixed typo
         products,
       );
-      // client কে success response পাঠানো হচ্ছে
-
     } catch (error) {
-
       return sendResponse(
         res,
         500,
@@ -841,206 +801,118 @@ export const productController = async (
         "Something went wrong!",
         error
       );
-      // error হলে 500 response পাঠানো হচ্ছে
     }
-
   }
 
   // =========================
   // GET SINGLE PRODUCT
   // =========================
-
   else if (method === "GET" && id !== null) {
-
     try {
-
       const products = readProduct();
-      // সব products নেওয়া হচ্ছে
-
-      const product = products.find(
-        (p: IProduct) => p.id === id
-      );
-
-      // find(...) → matching product খুঁজে বের করে
-      // p.id === id → product id match করছে কিনা
+      const product = products.find((p: IProduct) => p.id === id);
 
       if (!product) {
-
-        return sendResponse(
-          res,
-          404,
-          false,
-          "Product not found!"
-        );
-
+        return sendResponse(res, 404, false, "Product not found!");
       }
 
       return sendResponse(
         res,
         200,
         true,
-        "Product retrived succeefully",
-        products,
+        "Product retrieved successfully", // 🛠️ Fixed typo
+        product, // 🛠️ Fixed: products এর জায়গায় শুধু নির্দিষ্ট product পাঠানো হলো
       );
-
     } catch (error) {
-
-      return sendResponse(
-        res,
-        500,
-        false,
-        "Something went wrong!",
-        error
-      );
-
+      return sendResponse(res, 500, false, "Something went wrong!", error);
     }
   }
 
   // =========================
   // CREATE PRODUCT
   // =========================
-
   else if (method === "POST" && url === "/products") {
+    try {
+      const body = await parseBody(req);
+      const products = readProduct();
 
-    const body = await parseBody(req);
-    // request body parse করা হচ্ছে
+      const newProduct = {
+        id: Date.now(),
+        ...body,
+      };
 
-    const products = readProduct();
-    // আগের সব products নেওয়া হচ্ছে
+      products.push(newProduct);
+      insertProduct(products);
 
-    const newProduct = {
-      id: Date.now(),
-      // unique id তৈরি করা হচ্ছে
-
-      ...body,
-      // body এর সব property copy হচ্ছে
-
-      // উদাহরণ:
-      // body = { name: "Mouse" }
-      // →
-      // newProduct = { id: 123, name: "Mouse" }
-    };
-
-    products.push(newProduct);
-    // নতুন product array তে add করা হচ্ছে
-
-    insertProduct(products);
-    // updated array db.json এ save করা হচ্ছে
-
-    res.writeHead(200, {
-      "content-type": "application/json"
-    });
-    // response header set করা হচ্ছে
-
-    res.end(
-      JSON.stringify({
-        message: "Product created succeefully",
-        data: newProduct,
-      }),
-    );
-    // success response পাঠানো হচ্ছে
+      // 🛠️ Fixed: sendResponse ইউটিলিটি ব্যবহার করা হলো
+      return sendResponse(
+        res,
+        201, // 201 Created
+        true,
+        "Product created successfully",
+        newProduct
+      );
+    } catch (error) {
+       return sendResponse(res, 500, false, "Invalid JSON data", error);
+    }
   }
 
   // =========================
   // UPDATE PRODUCT
   // =========================
-
   else if (method === "PUT" && id !== null) {
+    try {
+      const body = await parseBody(req);
+      const products = readProduct();
+      const index = products.findIndex((p: IProduct) => p.id === id);
 
-    const body = await parseBody(req);
-    // updated data নেওয়া হচ্ছে
+      if (index < 0) {
+        // 🛠️ Fixed: return যোগ করা হয়েছে, নাহলে নিচের কোড রান করে ক্র্যাশ করবে
+        return sendResponse(res, 404, false, "Product not found!", null);
+      }
 
-    const products = readProduct();
-    // সব products read করা হচ্ছে
+      products[index] = {
+        id: products[index].id,
+        ...body,
+      };
 
-    const index = products.findIndex(
-      (p: IProduct) => p.id === id
-    );
+      insertProduct(products);
 
-    // findIndex(...) → matching product এর index বের করে
-
-    if (index < 0) {
-
-      res.writeHead(404, {
-        "content-type": "application/json"
-      });
-
-      res.end(
-        JSON.stringify({
-          message: "Product not found!",
-          data: null,
-        }),
+      // 🛠️ Fixed: sendResponse ইউটিলিটি ব্যবহার করা হলো
+      return sendResponse(
+        res,
+        200,
+        true,
+        "Product updated successfully!",
+        products[index]
       );
+    } catch (error) {
+       return sendResponse(res, 500, false, "Invalid JSON data", error);
     }
-
-    products[index] = {
-      id: products[index].id,
-      ...body,
-    };
-
-    // পুরোনো product update করা হচ্ছে
-    // id same রাখা হচ্ছে
-
-    insertProduct(products);
-    // updated data save করা হচ্ছে
-
-    res.writeHead(200, {
-      "content-type": "application/json"
-    });
-
-    res.end(
-      JSON.stringify({
-        message: "Product updated successfully!",
-        data: products[index],
-      }),
-    );
   }
 
   // =========================
   // DELETE PRODUCT
   // =========================
-
   else if (method === "DELETE" && id !== null) {
-
     const products = readProduct();
-    // সব products read করা হচ্ছে
-
-    const index = products.findIndex(
-      (p: IProduct) => p.id === id
-    );
-
-    // delete করার product index বের করা হচ্ছে
+    const index = products.findIndex((p: IProduct) => p.id === id);
 
     if (index < 0) {
-
-      res.writeHead(404, {
-        "content-type": "application/json"
-      });
-
-      res.end(
-        JSON.stringify({
-          message: "Product not found!",
-          data: null,
-        }),
-      );
+      // 🛠️ Fixed: return যোগ করা হয়েছে, নাহলে last array item (-1) ডিলিট হয়ে যাবে!
+      return sendResponse(res, 404, false, "Product not found!", null);
     }
 
     products.splice(index, 1);
-    // splice(index,1)
-    // ওই index থেকে 1টা item delete করবে
-
     insertProduct(products);
-    // updated array save করা হচ্ছে
 
-    res.writeHead(200, {
-      "content-type": "application/json"
-    });
-
-    res.end(
-      JSON.stringify({
-        message: "Product deleted successfully!",
-        data: null,
-      }),
+    // 🛠️ Fixed: sendResponse ইউটিলিটি ব্যবহার করা হলো
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Product deleted successfully!",
+      null
     );
   }
 };
