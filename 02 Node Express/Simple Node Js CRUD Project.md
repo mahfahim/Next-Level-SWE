@@ -285,7 +285,7 @@ server.listen(config.port, () => {
     // template string ব্যবহার করা হয়েছে (` `)
     // ${config.port} → dynamic port number বসায়
   
-);
+});
 ```
 
 ---
