@@ -279,14 +279,12 @@ server.listen(config.port, () => {
 
 // config.port → .env থেকে নেওয়া port number (যেমন 5000)
 // অর্থাৎ server চলে http://localhost:5000 এ
-
-  () => {
     console.log(`The server is running on the port ${config.port}`);
     // server সফলভাবে start হলে এই message দেখাবে
 
     // template string ব্যবহার করা হয়েছে (` `)
     // ${config.port} → dynamic port number বসায়
-  }
+  
 );
 ```
 
