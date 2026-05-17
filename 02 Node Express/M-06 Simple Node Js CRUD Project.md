@@ -99,64 +99,76 @@ npx tsc --init   # TypeScript project initialize করার জন্য tscon
 ```json
 {
   "name": "learning_node",
-  // প্রজেক্টের নাম (Node.js project identity)
-
   "version": "1.0.0",
-  // প্রজেক্টের ভার্সন (initial release)
-
   "description": "",
-  // প্রজেক্ট সম্পর্কে ছোট বিবরণ (এখন খালি রাখা হয়েছে)
-
   "main": "index.js",
-  // entry point file (Node.js সাধারণত এখান থেকে start করে)
-  // তবে TypeScript project এ সাধারণত src/server.ts ব্যবহার করা হয়
-
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    // default test script
-    // এখন কোন test setup নেই, তাই error message দেখাবে
-
-    "dev": "ts-node-dev --respawn src/server.ts"
-    // development mode এ server চালানোর command
-
-    // ts-node-dev → TypeScript code সরাসরি run করে
-    // --respawn → file change হলে server auto restart করে
-    // src/server.ts → main server file
+    "dev": "tsx watch ./src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-
   "keywords": [],
-  // project search keyword (এখন খালি)
-
   "author": "",
-  // project author নাম (এখন খালি)
-
   "license": "ISC",
-  // open-source license type (ISC = simple permissive license)
-
-  "type": "module",
-  // Node.js কে ES Module হিসেবে ব্যবহার করতে বলে
-  // অর্থাৎ import/export syntax ব্যবহার করা যাবে
-
-  "dependencies": {
-    "dotenv": "^17.4.2"
-    // dotenv → .env file থেকে environment variables load করার জন্য
-    // production + runtime এ দরকার হয়
-  },
-
   "devDependencies": {
-    "@types/node": "^25.7.0",
-    // Node.js এর TypeScript type definitions
-    // TypeScript কে Node.js features বুঝতে সাহায্য করে
-
-    "ts-node-dev": "^2.0.0",
-    // TypeScript run + auto restart tool (development এ use হয়)
-
-    "typescript": "^6.0.3"
-    // TypeScript compiler (TS → JS convert করার জন্য)
+    "@types/node": "^25.5.0",
+    "typescript": "^6.0.2"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "tsx": "^4.21.0"
   }
 }
 ```
 
+# tsconfig.json setup
+
+```
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+    "module": "esnext",
+    "target": "esnext",
+    "types": ["node"],
+    "moduleResolution": "bundler",
+    // For nodejs:
+    // "lib": ["esnext"],
+    // "types": ["node"],
+    // and npm install -D @types/node
+
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // Style Options
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true,
+
+    // Recommended Options
+    "strict": true,
+    // "jsx": "react-jsx",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true
+  }
+}
+```
 ---
 
 # Step 5: Create `.env`
