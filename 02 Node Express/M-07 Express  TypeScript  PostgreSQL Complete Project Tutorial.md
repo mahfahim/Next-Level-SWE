@@ -123,14 +123,14 @@ mkdir src/config
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
-    "rootDir": "./src",
-    "outDir": "./dist",
+    "rootDir": "./src", //////////////////// vvi
+    "outDir": "./dist", //////////////////// vvi
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "esnext",
-    "target": "esnext",
-    "moduleResolution": "bundler",
-    "types": ["node"],
+    "module": "esnext", //////////////////// vvi
+    "target": "esnext", /////////////////// vvi
+    "moduleResolution": "bundler", /////////////////////// vvi
+    "types": ["node"], ////////////////////////////// vvi
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -155,7 +155,7 @@ mkdir src/config
 
     // Recommended Options
     "strict": true,
-    // "jsx": "react-jsx",
+    // "jsx": "react-jsx",  ///////////////////// vvi, just comment it
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
