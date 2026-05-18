@@ -82,6 +82,7 @@ mkdir src/config
 `"type": "module"` এবং `"dev"` স্ক্রিপ্ট অ্যাড করে পুরো ফাইলটি এরকম করো:
 
 ```json
+
 {
   "name": "express",
   "version": "1.0.0",
@@ -95,17 +96,16 @@ mkdir src/config
   "author": "",
   "license": "ISC",
   "type": "module",
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/pg": "^8.20.0",
+    "typescript": "^6.0.3"
+  },
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "pg": "^8.20.0"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.6",
-    "@types/node": "^25.7.0",
-    "@types/pg": "^8.20.0",
-    "tsx": "^4.21.0",
-    "typescript": "^6.0.3"
+    "pg": "^8.20.0",
+    "tsx": "^4.21.0"
   }
 }
 
