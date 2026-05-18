@@ -89,13 +89,13 @@ mkdir src/config
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch ./src/server.ts",
+    "dev": "tsx watch ./src/server.ts", ///////////////////////////////////////////////// vvi
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
+  "type": "module", ///////////////////////////////////////////////// vvi
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/pg": "^8.20.0",
