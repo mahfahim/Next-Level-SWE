@@ -260,163 +260,399 @@ export default config;
 ### `src/server.ts`
 
 ```typescript
-import express from "express";
+// express package থেকে express function এবং কিছু type import করা হচ্ছে
+import express, {
+  type Application, // পুরো Express app এর type
+  type Request, // request object এর type
+  type Response, // response object এর type
+} from "express";
+
+// PostgreSQL database এর সাথে connect করার জন্য Pool import করা হচ্ছে
 import { Pool } from "pg";
-import config from "./config/index.js"; // 👈 ESM system expects .js
 
-const app = express();
-const port = config.port || 5000;
+// config file থেকে configuration import করা হচ্ছে
+import config from "./config";
 
-/* --------------------------------
-   Middlewares
--------------------------------- */
+
+// express() function call করে app তৈরি করা হচ্ছে
+const app: Application = express();
+
+// config থেকে port নেওয়া হচ্ছে
+const port = config.port;
+
+
+
+// =========================
+// Middleware Section
+// =========================
+
+// JSON data receive করার জন্য middleware
 app.use(express.json());
+
+// plain text receive করার জন্য middleware
 app.use(express.text());
+
+// form data handle করার জন্য middleware
 app.use(express.urlencoded({ extended: true }));
 
-/* --------------------------------
-   Database Connection
--------------------------------- */
+
+
+// =========================
+// Database Connection
+// =========================
+
+// PostgreSQL connection pool তৈরি
 const pool = new Pool({
-  connectionString: config.connectionString,
+  // database connection string
+  connectionString: config.connection_string,
 });
 
-/* --------------------------------
-   Test Database & Init Table
--------------------------------- */
+
+
+// =========================
+// Database Initialization
+// =========================
+
+// async function তৈরি করা হয়েছে database table create করার জন্য
 const initDB = async () => {
   try {
-    await pool.query("SELECT NOW()");
-    console.log("Database Connected!");
 
+    // SQL query run করা হচ্ছে
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS users(
+        
+        // users table তৈরি হবে যদি আগে না থাকে
+        CREATE TABLE IF NOT EXISTS users(
+
+        // auto increment id
         id SERIAL PRIMARY KEY,
-        name VARCHAR(50),
-        email VARCHAR(100) UNIQUE NOT NULL,
-        password VARCHAR(100) NOT NULL,
-        age INT,
+
+        // name column
+        name VARCHAR(20),
+
+        // unique email
+        email VARCHAR(20) UNIQUE NOT NULL,
+
+        // password required
+        password VARCHAR(20) NOT NULL,
+
+        // active status
         is_active BOOLEAN DEFAULT true,
-        created_at TIMESTAMP DEFAULT NOW()
-      )
+
+        // age column
+        age INT,
+
+        // automatically created time
+        created_at TIMESTAMP DEFAULT NOW(),
+
+        // automatically updated time
+        updated_at TIMESTAMP DEFAULT NOW()
+        )
     `);
-    console.log("Users table created!");
+
+    // success message
+    console.log("Database connected successfully!");
+
   } catch (error) {
+
+    // error হলে console এ দেখাবে
     console.log(error);
   }
 };
 
+// function call করা হচ্ছে
 initDB();
 
-/* --------------------------------
-   Routes
--------------------------------- */
 
-// 1. Home Route
-app.get("/", (req, res) => {
+
+// =========================
+// Home Route
+// =========================
+
+// GET request handle করবে "/"
+app.get("/", (req: Request, res: Response) => {
+
+  // JSON response পাঠানো হচ্ছে
   res.status(200).json({
-    success: true,
-    message: "Express PostgreSQL Server Running...",
+
+    // message
+    message: "Express Server",
+
+    // author name
+    author: "Next Level",
   });
 });
 
-// 2. Create User (POST)
-app.post("/api/users", async (req, res) => {
+
+
+// =========================
+// Create User API
+// =========================
+
+// POST request দিয়ে user create করা হবে
+app.post("/api/users", async (req: Request, res: Response) => {
+
+  // request body থেকে data নেওয়া হচ্ছে
   const { name, email, password, age } = req.body;
+
   try {
+
+    // database এ insert query চালানো হচ্ছে
     const result = await pool.query(
-      `INSERT INTO users(name,email,password,age)
-       VALUES($1,$2,$3,$4) RETURNING *`,
+
+      `
+      INSERT INTO users(name,email,password,age)
+      VALUES($1,$2,$3,$4)
+      RETURNING *
+      `,
+
+      // values array
       [name, email, password, age],
     );
+
+    // success response
     res.status(201).json({
       success: true,
-      message: "User created successfully!",
+      message: "User Created successfully!",
+
+      // inserted row return করবে
       data: result.rows[0],
     });
+
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+
+    // error response
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      error: error,
+    });
   }
 });
 
-// 3. Get All Users (GET)
-app.get("/api/users", async (req, res) => {
+
+
+// =========================
+// Get All Users
+// =========================
+
+// সব user পাওয়ার route
+app.get("/api/users", async (req: Request, res: Response) => {
+
   try {
-    const result = await pool.query(`SELECT * FROM users`);
+
+    // সব user select করা হচ্ছে
+    const result = await pool.query(`
+      SELECT * FROM users
+    `);
+
+    // response পাঠানো হচ্ছে
     res.status(200).json({
       success: true,
-      message: "Users retrieved successfully!",
+      message: "Users retrived successfully!",
+
+      // সব rows
       data: result.rows,
     });
+
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+
+    // error response
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      error: error,
+    });
   }
 });
 
-// 4. Get Single User (GET)
-app.get("/api/users/:id", async (req, res) => {
+
+
+// =========================
+// Get Single User
+// =========================
+
+// dynamic route parameter :id
+app.get("/api/users/:id", async (req: Request, res: Response) => {
+
+  // URL parameter থেকে id নেওয়া হচ্ছে
   const { id } = req.params;
+
   try {
-    const result = await pool.query(`SELECT * FROM users WHERE id=$1`, [id]);
+
+    // নির্দিষ্ট user select করা হচ্ছে
+    const result = await pool.query(
+      `
+      SELECT * FROM users WHERE id=$1
+      `,
+      [id],
+    );
+
+    // user না পেলে
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, message: "User not found!" });
+
+      res.status(404).json({
+        success: false,
+        message: "User Not found!",
+        data: {},
+      });
     }
+
+    // user পাওয়া গেলে
     res.status(200).json({
       success: true,
-      message: "User retrieved successfully!",
+      message: "User retrived successfully!",
+
+      // single user
       data: result.rows[0],
     });
+
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+
+    // error response
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      error: error,
+    });
   }
 });
 
-// 5. Update User (PUT)
-app.put("/api/users/:id", async (req, res) => {
+
+
+// =========================
+// Update User
+// =========================
+
+// PUT request দিয়ে update করা হবে
+app.put("/api/users/:id", async (req: Request, res: Response) => {
+
+  // params থেকে id
   const { id } = req.params;
+
+  // body থেকে data
   const { name, password, age, is_active } = req.body;
+
   try {
+
+    // UPDATE query
     const result = await pool.query(
-      `UPDATE users
-       SET name=COALESCE($1,name), password=COALESCE($2,password), age=COALESCE($3,age), is_active=COALESCE($4,is_active)
-       WHERE id=$5 RETURNING *`,
+      `
+      UPDATE users
+
+      SET
+
+      // নতুন value না দিলে পুরানো value থাকবে
+      name = COALESCE($1,name),
+
+      password = COALESCE($2,password),
+
+      age = COALESCE($3,age),
+
+      is_active = COALESCE($4,is_active)
+
+      WHERE id=$5
+
+      RETURNING *
+      `,
+
+      // values array
       [name, password, age, is_active, id],
     );
+
+    // user না পেলে
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, message: "User not found!" });
+
+      res.status(404).json({
+        success: false,
+        message: "User Not found!",
+      });
     }
+
+    // success response
     res.status(200).json({
       success: true,
       message: "User updated successfully!",
+
+      // updated user
       data: result.rows[0],
     });
+
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+
+    // error response
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      error: error,
+    });
   }
 });
 
-// 6. Delete User (DELETE)
-app.delete("/api/users/:id", async (req, res) => {
+
+
+// =========================
+// Delete User
+// =========================
+
+// DELETE request
+app.delete("/api/users/:id", async (req: Request, res: Response) => {
+
+  // id নেওয়া হচ্ছে
   const { id } = req.params;
+
   try {
-    const result = await pool.query(`DELETE FROM users WHERE id=$1`, [id]);
+
+    // delete query
+    const result = await pool.query(
+      `
+      DELETE FROM users WHERE id=$1
+      `,
+      [id],
+    );
+
+    // console log
+    console.log(result);
+
+    // user না থাকলে
     if (result.rowCount === 0) {
-      return res.status(404).json({ success: false, message: "User not found!" });
+
+      res.status(404).json({
+        success: false,
+        message: "User Not found!",
+      });
     }
+
+    // success response
     res.status(200).json({
       success: true,
       message: "User deleted successfully!",
+
+      // empty object
+      data: {},
     });
+
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+
+    // error response
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      error: error,
+    });
   }
 });
 
-/* --------------------------------
-   Start Server
--------------------------------- */
+
+
+// =========================
+// Start Server
+// =========================
+
+// server start করা হচ্ছে
 app.listen(port, () => {
-  console.log(`Server running on ${port}`);
+
+  // console message
+  console.log(`Example app listening on port ${port}`);
 });
 
 ```
