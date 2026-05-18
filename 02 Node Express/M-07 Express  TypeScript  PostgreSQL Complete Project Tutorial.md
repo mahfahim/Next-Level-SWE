@@ -117,17 +117,19 @@ mkdir src/config
 পুরো ফাইলটি রিপ্লেস করে দাও। এখানে `"module": "NodeNext"` ব্যবহার করা হয়েছে যা Modern Node.js ESM সিস্টেমকে দারুণভাবে সাপোর্ট করে।
 
 ```json
+
+
 {
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
     "rootDir": "./src",
     "outDir": "./dist",
-
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
+    "module": "esnext",
     "target": "esnext",
+    "moduleResolution": "bundler",
     "types": ["node"],
     // For nodejs:
     // "lib": ["esnext"],
@@ -158,7 +160,7 @@ mkdir src/config
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
+    "skipLibCheck": true
   }
 }
 
