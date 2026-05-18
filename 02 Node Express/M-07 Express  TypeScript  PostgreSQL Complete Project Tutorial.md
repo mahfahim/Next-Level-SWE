@@ -176,18 +176,18 @@ mkdir src/config
 ### 1. `src/server.ts` এ বেসিক কোড লেখো:
 
 ```typescript
-import express from "express";
+import  express , {type Request , type Response, } from "express";
 
 const app = express();
 const port = 5000;
 
-app.get("/", (req, res) => {
-  res.send("Initial Server is Running Successfully! 🎉");
+app.get("/",(req:Request, res:Response)=>{
+    res.send("Initial server is running successfully");
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+app.listen(port, ()=>{
+    console.log(`Server is running on port ${port}`);
+})
 
 ```
 
