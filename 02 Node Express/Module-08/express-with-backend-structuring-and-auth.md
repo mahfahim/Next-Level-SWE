@@ -84,8 +84,14 @@ startServer();
 এখানে express app setup হবে।
 
 ```ts
-import express, { type Application } from "express";
-import router from "./app/routes/index.js";
+import express, {
+  type Application,
+  type Request,
+  type Response,
+} from "express";
+import { profileRoute } from "./modules/profile/profile.route";
+import { userRoute } from "./modules/user/user.route";
+import { authRoute } from "./modules/auth/auth.route";
 
 const app: Application = express();
 
@@ -93,9 +99,17 @@ app.use(express.json());
 app.use(express.text());
 app.use(express.urlencoded({ extended: true }));
 
+app.get("/", (req: Request, res: Response) => {
+  //res.send("Hello World!");
+  res.status(200).json({
+    message: "Express Server",
+    author: "Next Level",
+  });
+});
 
-app.use(router);
-
+app.use("/api/users", userRoute);
+app.use("/api/profile", profileRoute);
+app.use("/api/auth", authRoute);
 export default app;
 ```
 
