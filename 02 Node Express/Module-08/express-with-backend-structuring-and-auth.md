@@ -1,7 +1,6 @@
+# 🚀 Updated Proper Express + TypeScript + PostgreSQL Project Structure
 
----
-
-# 📁 Proper Project Structure
+তোমার `auth`, `profile`, `user` module add করার পরে structure হবে এভাবে:
 
 ```txt
 express/
@@ -14,18 +13,31 @@ express/
 │   │   │   └── index.ts
 │   │   │
 │   │   ├── db/
-│   │   │   ├── index.ts
-│   │   │   
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── routes/
+│   │   │   └── index.ts
 │   │   │
 │   │   ├── modules/
-│   │   │   └── user/
-│   │   │       ├── user.controller.ts
-│   │   │       ├── user.route.ts
-│   │   │       ├── user.service.ts
-│   │   │       └── user.interface.ts
+│   │   │   │
+│   │   │   ├── user/
+│   │   │   │   ├── user.interface.ts
+│   │   │   │   ├── user.service.ts
+│   │   │   │   ├── user.controller.ts
+│   │   │   │   └── user.route.ts
+│   │   │   │
+│   │   │   ├── auth/
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   ├── auth.controller.ts
+│   │   │   │   └── auth.route.ts
+│   │   │   │
+│   │   │   └── profile/
+│   │   │       ├── profile.interface.ts
+│   │   │       ├── profile.service.ts
+│   │   │       ├── profile.controller.ts
+│   │   │       └── profile.route.ts
 │   │   │
-│   │   
-│   │       
+│   │   └── middleware/
 │   │
 │   ├── app.ts
 │   └── server.ts
@@ -37,30 +49,44 @@ express/
 
 ---
 
-# 📌 কোন ফাইলের কাজ কী?
+# 📌 Architecture Flow
 
-| File                 | কাজ                       |
-| -------------------- | ------------------------- |
-| `server.ts`          | শুধু server start করবে    |
-| `app.ts`             | express app configuration |
-| `config/index.ts`    | env configuration         |
-| `db/index.ts`        | database connection       |
-| `db/initDB.ts`       | table create              |
-| `user.route.ts`      | সব routes                 |
-| `user.controller.ts` | request/response handle   |
-| `user.service.ts`    | database query            |
-| `user.interface.ts`  | TypeScript types          |
+```txt
+Client Request
+      ↓
+Route
+      ↓
+Controller
+      ↓
+Service
+      ↓
+Database
+```
+
+---
+
+# 📌 প্রতিটা Folder এর কাজ
+
+| Folder/File | কাজ                      |
+| ----------- | ------------------------ |
+| config      | env config               |
+| db          | database connection      |
+| modules     | feature/module wise code |
+| routes      | সব route combine         |
+| middleware  | custom middleware        |
+| app.ts      | express app config       |
+| server.ts   | server start             |
 
 ---
 
 # 📌 1. `src/server.ts`
 
-এখানে শুধু server start হবে।
+শুধু server start হবে এখানে।
 
 ```ts
 import app from "./app.js";
 import config from "./app/config/index.js";
-import initDB from "./app/db/initDB.js";
+import { initDB } from "./app/db/index.js";
 
 const startServer = async () => {
   try {
@@ -81,35 +107,20 @@ startServer();
 
 # 📌 2. `src/app.ts`
 
-এখানে express app setup হবে।
+Express app configuration এখানে থাকবে।
 
 ```ts
-import express, {
-  type Application,
-  type Request,
-  type Response,
-} from "express";
-import { profileRoute } from "./modules/profile/profile.route";
-import { userRoute } from "./modules/user/user.route";
-import { authRoute } from "./modules/auth/auth.route";
+import express, { type Application } from "express";
+import router from "./app/routes/index.js";
 
 const app: Application = express();
 
 app.use(express.json());
-app.use(express.text());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.text());
 
-app.get("/", (req: Request, res: Response) => {
-  //res.send("Hello World!");
-  res.status(200).json({
-    message: "Express Server",
-    author: "Next Level",
-  });
-});
+app.use("/api/v1", router);
 
-app.use("/api/users", userRoute);
-app.use("/api/profile", profileRoute);
-app.use("/api/auth", authRoute);
 export default app;
 ```
 
@@ -120,14 +131,15 @@ export default app;
 ```ts
 import dotenv from "dotenv";
 import path from "path";
+
 dotenv.config({
   path: path.join(process.cwd(), ".env"),
 });
 
 const config = {
-  connection_string: process.env.CONNECTIONSTRING as string,
   port: process.env.PORT,
-  secret : process.env.JWT_SECRET
+  connection_string: process.env.CONNECTIONSTRING as string,
+  secret: process.env.JWT_SECRET as string,
 };
 
 export default config;
@@ -137,11 +149,9 @@ export default config;
 
 # 📌 4. `src/app/db/index.ts`
 
-Database connection এখানে থাকবে।
-
 ```ts
 import { Pool } from "pg";
-import config from "../config";
+import config from "../config/index.js";
 
 export const pool = new Pool({
   connectionString: config.connection_string,
@@ -149,34 +159,37 @@ export const pool = new Pool({
 
 export const initDB = async () => {
   try {
+    // users table
     await pool.query(`
-        CREATE TABLE IF NOT EXISTS users(
+      CREATE TABLE IF NOT EXISTS users(
         id SERIAL PRIMARY KEY,
-        name VARCHAR(20),
-        email VARCHAR(20) UNIQUE NOT NULL,
+        name VARCHAR(50),
+        email VARCHAR(50) UNIQUE NOT NULL,
         password TEXT NOT NULL,
-        is_active BOOLEAN DEFAULT true,
         age INT,
+        is_active BOOLEAN DEFAULT true,
 
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
-        )
-            `);
+      )
+    `);
 
+    // profiles table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS profiles(
-      id SERIAL PRIMARY KEY,
-      user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+        id SERIAL PRIMARY KEY,
 
-      bio TEXT,
-      address TEXT,
-      phone VARCHAR(15),
-      gender VARCHAR(10),
+        user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
 
-      created_at TIMESTAMP DEFAULT NOW(),
-      updated_at TIMESTAMP DEFAULT NOW()
-      )  
-        `);
+        bio TEXT,
+        address TEXT,
+        phone VARCHAR(15),
+        gender VARCHAR(10),
+
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
 
     console.log("Database connected successfully!");
   } catch (error) {
@@ -187,13 +200,31 @@ export const initDB = async () => {
 
 ---
 
+# 📌 5. `src/app/routes/index.ts`
 
+সব module route এখানে combine হবে।
+
+```ts
+import { Router } from "express";
+
+import { userRoute } from "../modules/user/user.route.js";
+import { authRoute } from "../modules/auth/auth.route.js";
+import { profileRoute } from "../modules/profile/profile.route.js";
+
+const router = Router();
+
+router.use("/users", userRoute);
+router.use("/auth", authRoute);
+router.use("/profiles", profileRoute);
+
+export default router;
+```
 
 ---
 
-# 📌 6. `src/app/modules/user/user.interface.ts`
+# 👤 USER MODULE
 
-Type define করার জন্য।
+# 📌 6. `user.interface.ts`
 
 ```ts
 export interface IUser {
@@ -207,14 +238,15 @@ export interface IUser {
 
 ---
 
-# 📌 7. `src/app/modules/user/user.service.ts`
+# 📌 7. `user.service.ts`
 
-সব database query এখানে থাকবে।
+Database query এখানে থাকবে।
 
 ```ts
 import bcrypt from "bcryptjs";
-import { pool } from "../../db";
-import type { IUser } from "./user.interface";
+import { pool } from "../../db/index.js";
+import type { IUser } from "./user.interface.js";
+
 const createUserIntoDB = async (payload: IUser) => {
   const { name, email, password, age } = payload;
 
@@ -222,7 +254,9 @@ const createUserIntoDB = async (payload: IUser) => {
 
   const result = await pool.query(
     `
-     INSERT INTO users(name,email,password,age) VALUES($1,$2,$3,$4) RETURNING *
+    INSERT INTO users(name,email,password,age)
+    VALUES($1,$2,$3,$4)
+    RETURNING *
     `,
     [name, email, hashPassword, age],
   );
@@ -231,38 +265,51 @@ const createUserIntoDB = async (payload: IUser) => {
 
   return result;
 };
+
 const getAllUsersFromDB = async () => {
   const result = await pool.query(`
-      SELECT * FROM users  
-        `);
+    SELECT * FROM users
+  `);
+
   return result;
 };
 
 const getSingleUserFromDB = async (id: string) => {
   const result = await pool.query(
     `
-      SELECT * FROM users WHERE id=$1  
-        `,
+    SELECT * FROM users WHERE id=$1
+    `,
     [id],
   );
+
   return result;
 };
 
-const updateUserFromDB = async (payload: IUser, id: string) => {
+const updateUserFromDB = async (
+  payload: Partial<IUser>,
+  id: string,
+) => {
   const { name, password, age, is_active } = payload;
+
+  let hashPassword = null;
+
+  if (password) {
+    hashPassword = await bcrypt.hash(password, 10);
+  }
 
   const result = await pool.query(
     `
-    UPDATE users 
-    SET 
-    name=COALESCE($1,name),
-    password=COALESCE($2,password),
-    age=COALESCE($3,age),
-    is_active=COALESCE($4,is_active) 
+    UPDATE users
+    SET
+      name=COALESCE($1,name),
+      password=COALESCE($2,password),
+      age=COALESCE($3,age),
+      is_active=COALESCE($4,is_active)
 
-    WHERE id=$5 RETURNING *
+    WHERE id=$5
+    RETURNING *
     `,
-    [name, password, age, is_active, id],
+    [name, hashPassword, age, is_active, id],
   );
 
   return result;
@@ -271,10 +318,11 @@ const updateUserFromDB = async (payload: IUser, id: string) => {
 const deleteUserFromDB = async (id: string) => {
   const result = await pool.query(
     `
-    DELETE FROM users WHERE id=$1  
-      `,
+    DELETE FROM users WHERE id=$1
+    `,
     [id],
   );
+
   return result;
 };
 
@@ -289,32 +337,25 @@ export const userService = {
 
 ---
 
-# 📌 8. `src/app/modules/user/user.controller.ts`
-
-Controller request/response handle করে।
+# 📌 8. `user.controller.ts`
 
 ```ts
 import type { Request, Response } from "express";
-import { userService } from "./user.service";
+import { userService } from "./user.service.js";
 
 const createUser = async (req: Request, res: Response) => {
-  //   console.log(req.body);
-  //   const { name, email, password, age } = req.body;
-
   try {
     const result = await userService.createUserIntoDB(req.body);
-    // console.log(result);
 
     res.status(201).json({
       success: true,
-      message: "User Created successfully!",
+      message: "User created successfully!",
       data: result.rows[0],
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
       message: error.message,
-      error: error,
     });
   }
 };
@@ -322,42 +363,42 @@ const createUser = async (req: Request, res: Response) => {
 const getAllUsers = async (req: Request, res: Response) => {
   try {
     const result = await userService.getAllUsersFromDB();
+
     res.status(200).json({
       success: true,
-      message: "Users retrived successfully!",
+      message: "Users retrieved successfully!",
       data: result.rows,
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
       message: error.message,
-      error: error,
     });
   }
 };
 
 const getSingleUser = async (req: Request, res: Response) => {
   const { id } = req.params;
+
   try {
-    const result = await userService.getSingleUserFromDB(id as string);
+    const result = await userService.getSingleUserFromDB(id);
+
     if (result.rows.length === 0) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
-        message: "User Not found!",
-        data: {},
+        message: "User not found!",
       });
     }
 
     res.status(200).json({
       success: true,
-      message: "User retrived successfully!",
+      message: "User retrieved successfully!",
       data: result.rows[0],
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
       message: error.message,
-      error: error,
     });
   }
 };
@@ -365,20 +406,16 @@ const getSingleUser = async (req: Request, res: Response) => {
 const updateUser = async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  // console.log("Id : ", id);
-  // console.log({ name, password, age, is_active });
-
   try {
-    const result = await userService.updateUserFromDB(req.body, id as string);
+    const result = await userService.updateUserFromDB(req.body, id);
 
     if (result.rows.length === 0) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
-        message: "User Not found!",
+        message: "User not found!",
       });
     }
 
-    // console.log(result);
     res.status(200).json({
       success: true,
       message: "User updated successfully!",
@@ -388,34 +425,31 @@ const updateUser = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: error.message,
-      error: error,
     });
   }
 };
 
 const deleteUser = async (req: Request, res: Response) => {
   const { id } = req.params;
-  try {
-    const result = await userService.deleteUserFromDB(id as string);
 
-    console.log(result);
+  try {
+    const result = await userService.deleteUserFromDB(id);
+
     if (result.rowCount === 0) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
-        message: "User Not found!",
+        message: "User not found!",
       });
     }
 
     res.status(200).json({
       success: true,
       message: "User deleted successfully!",
-      data: {},
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
       message: error.message,
-      error: error,
     });
   }
 };
@@ -431,13 +465,11 @@ export const userController = {
 
 ---
 
-# 📌 9. `src/app/modules/user/user.route.ts`
-
-সব user route এখানে থাকবে।
+# 📌 9. `user.route.ts`
 
 ```ts
 import { Router } from "express";
-import { userController } from "./user.controller";
+import { userController } from "./user.controller.js";
 
 const router = Router();
 
@@ -452,106 +484,294 @@ export const userRoute = router;
 
 ---
 
+# 🔐 AUTH MODULE
 
+# 📌 10. `auth.service.ts`
 
----
+```ts
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
-# 🚀 এখন কী লাভ হলো?
+import { pool } from "../../db/index.js";
+import config from "../../config/index.js";
 
-আগে:
+const loginUserIntoDB = async (payload: any) => {
+  const { email, password } = payload;
 
-```txt
-server.ts
-├── route
-├── database
-├── query
-├── controller
-├── middleware
-├── everything
-```
+  // check user exists
+  const user = await pool.query(
+    `
+    SELECT * FROM users WHERE email=$1
+    `,
+    [email],
+  );
 
-এখন:
+  if (user.rows.length === 0) {
+    throw new Error("User not found!");
+  }
 
-```txt
-controller -> request handle
-service -> database query
-route -> route
-db -> database
-config -> env
-```
+  const isPasswordMatched = await bcrypt.compare(
+    password,
+    user.rows[0].password,
+  );
 
----
+  if (!isPasswordMatched) {
+    throw new Error("Password does not match!");
+  }
 
-# 📌 Industry তে এভাবে কেন করে?
+  const jwtPayload = {
+    id: user.rows[0].id,
+    email: user.rows[0].email,
+  };
 
-কারণ:
+  const token = jwt.sign(jwtPayload, config.secret, {
+    expiresIn: "7d",
+  });
 
-### ✅ Maintain করা সহজ
+  delete user.rows[0].password;
 
-১০ হাজার লাইনের file হয় না।
+  return {
+    token,
+    user: user.rows[0],
+  };
+};
 
----
-
-### ✅ Team work সহজ
-
-একজন route এ কাজ করবে
-একজন service এ
-একজন controller এ
-
-conflict কম হবে।
-
----
-
-### ✅ Reusable
-
-Service অন্য জায়গা থেকেও use করা যায়।
-
----
-
-### ✅ Debugging সহজ
-
-Problem কোথায় হয়েছে দ্রুত বুঝা যায়।
-
----
-
-# 📌 Architecture Flow
-
-```txt
-Client Request
-      ↓
-Route
-      ↓
-Controller
-      ↓
-Service
-      ↓
-Database
+export const authService = {
+  loginUserIntoDB,
+};
 ```
 
 ---
 
-# 📌 Controller vs Service
+# 📌 11. `auth.controller.ts`
 
-| Controller          | Service             |
-| ------------------- | ------------------- |
-| req/res handle করে  | database query করে  |
-| status code পাঠায়   | business logic রাখে |
-| response return করে | data process করে    |
+```ts
+import type { Request, Response } from "express";
+import { authService } from "./auth.service.js";
+
+const loginUser = async (req: Request, res: Response) => {
+  try {
+    const result = await authService.loginUserIntoDB(req.body);
+
+    res.status(200).json({
+      success: true,
+      message: "User login successful!",
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const authController = {
+  loginUser,
+};
+```
+
+---
+
+# 📌 12. `auth.route.ts`
+
+```ts
+import { Router } from "express";
+import { authController } from "./auth.controller.js";
+
+const router = Router();
+
+router.post("/login", authController.loginUser);
+
+export const authRoute = router;
+```
+
+---
+
+# 👤 PROFILE MODULE
+
+# 📌 13. `profile.interface.ts`
+
+```ts
+export interface IProfile {
+  user_id: number;
+  bio?: string;
+  address?: string;
+  phone?: string;
+  gender?: string;
+}
+```
+
+---
+
+# 📌 14. `profile.service.ts`
+
+```ts
+import { pool } from "../../db/index.js";
+import type { IProfile } from "./profile.interface.js";
+
+const createProfileIntoDB = async (payload: IProfile) => {
+  const { user_id, bio, address, phone, gender } = payload;
+
+  // check user exists
+  const user = await pool.query(
+    `
+    SELECT * FROM users WHERE id=$1
+    `,
+    [user_id],
+  );
+
+  if (user.rows.length === 0) {
+    throw new Error("User does not exist!");
+  }
+
+  const result = await pool.query(
+    `
+    INSERT INTO profiles(user_id,bio,address,phone,gender)
+    VALUES($1,$2,$3,$4,$5)
+    RETURNING *
+    `,
+    [user_id, bio, address, phone, gender],
+  );
+
+  return result;
+};
+
+export const profileService = {
+  createProfileIntoDB,
+};
+```
+
+---
+
+# 📌 15. `profile.controller.ts`
+
+```ts
+import type { Request, Response } from "express";
+import { profileService } from "./profile.service.js";
+
+const createProfile = async (req: Request, res: Response) => {
+  try {
+    const result = await profileService.createProfileIntoDB(req.body);
+
+    res.status(201).json({
+      success: true,
+      message: "Profile created successfully!",
+      data: result.rows[0],
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const profileController = {
+  createProfile,
+};
+```
+
+---
+
+# 📌 16. `profile.route.ts`
+
+```ts
+import { Router } from "express";
+import { profileController } from "./profile.controller.js";
+
+const router = Router();
+
+router.post("/", profileController.createProfile);
+
+export const profileRoute = router;
+```
+
+---
+
+# 📌 API URL Example
+
+## User
+
+```txt
+POST   /api/v1/users
+GET    /api/v1/users
+GET    /api/v1/users/:id
+PUT    /api/v1/users/:id
+DELETE /api/v1/users/:id
+```
+
+---
+
+## Auth
+
+```txt
+POST /api/v1/auth/login
+```
+
+---
+
+## Profile
+
+```txt
+POST /api/v1/profiles
+```
+
+---
+
+# 📌 কেন Modular Structure Industry Standard?
+
+## ✅ Code clean থাকে
+
+সব code এক file এ থাকে না।
+
+---
+
+## ✅ Large project manageable হয়
+
+১০০+ route handle করা সহজ হয়।
+
+---
+
+## ✅ Team work easy হয়
+
+একজন auth module
+একজন user module
+একজন profile module
+
+আলাদা কাজ করতে পারে।
+
+---
+
+## ✅ Reusable হয়
+
+service অন্য জায়গা থেকেও reuse করা যায়।
+
+---
+
+## ✅ Testing easy হয়
+
+প্রতিটা module আলাদা test করা যায়।
 
 ---
 
 # 📌 Next Level Improvement
 
-এরপর তুমি এগুলো শিখতে পারো:
+এখন এগুলো শিখো:
 
-* validation (zod/joi)
-* error handler middleware
-* async try catch wrapper
-* authentication JWT
-* bcrypt password hash
-* prisma ORM
-* mongoose
-* clean architecture
-* repository pattern
-* MVC architecture
-* modular architecture
+* validation using zod
+* custom error handler
+* async wrapper
+* JWT middleware
+* role based auth
+* refresh token
+* Prisma ORM
+* Mongoose
+* Clean Architecture
+* Repository Pattern
+* MVC Architecture
+* Modular Architecture
+* Global error handler
+* Environment validation
+* Cookie based auth
+* Access & Refresh token system
